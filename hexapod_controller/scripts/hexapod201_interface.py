@@ -424,8 +424,26 @@ class Hexapod201Interface(Hexapod201BaseInterface):
     
     def _connect_plc(self):
         """Establish PLC connection"""
+        # try:
+        #     # 添加路由, 仅在第一次与倍福通讯时使用
+
+        #     CLIENT_NETID = "192.168.3.4.1.1"
+        #     CLIENT_IP = "192.168.3.4"
+        #     TARGET_IP = "192.168.3.101"
+        #     TARGET_USERNAME = "Administrator"
+        #     TARGET_PASSWORD = "1"
+        #     ROUTE_NAME = "route-to-my-plc"
+        #     pyads.add_route_to_plc(
+        #         CLIENT_NETID, CLIENT_IP, TARGET_IP, TARGET_USERNAME, TARGET_PASSWORD,
+        #         route_name=ROUTE_NAME
+        #     )
+        #     print("添加路由成功111")
+        # except:
+        #     print("添加路由失败111")
+            
+        
         try:
-            self.plc = pyads.Connection(self.plc_ip, pyads.PORT_TC3PLC1)
+            self.plc = pyads.Connection(self.plc_ip, pyads.PORT_TC3PLC1, '192.168.3.101')
             self.plc.open()
             
             # Initialize PLC symbols
@@ -433,7 +451,12 @@ class Hexapod201Interface(Hexapod201BaseInterface):
             self.symbol_Cmd_Gait = self.plc.get_symbol('MAIN.PTCmd.Gait', structure_def=stGait_def)
             self.symbol_Cmd_Pose = self.plc.get_symbol('MAIN.PTCmd.Pose', structure_def=stPose_def)
             self.symbol_CtrlCmd = self.plc.get_symbol('MAIN.CtrlCmd', plc_datatype="UDINT")
-            self.symbol_State = self.plc.get_symbol('MAIN.state', plc_datatype="UDINT")
+            self.symbol_CtrlCmd.symbol_type = pyads.PLCTYPE_UDINT
+            self.symbol_CtrlCmd.plc_type = pyads.PLCTYPE_UDINT
+            self.symbol_State = self.plc.get_symbol(
+                'MAIN.state', plc_datatype="UDINT")
+            self.symbol_State.symbol_type = pyads.PLCTYPE_UDINT
+            self.symbol_State.plc_type = pyads.PLCTYPE_UDINT
             self.symbol_QState = self.plc.get_symbol('MAIN.Q_State')
             self.symbol_PTActPos = self.plc.get_symbol('MAIN.PTActPos', structure_def=stPose_def)
             
@@ -454,6 +477,8 @@ class Hexapod201Interface(Hexapod201BaseInterface):
             return False
         
         try:
+            if self.symbol_State.value is None:
+                self.symbol_State.read()
             self.symbol_State.write(State.ENABLE)
             
             # Wait for enable
@@ -520,10 +545,12 @@ class Hexapod201Interface(Hexapod201BaseInterface):
         try:
             # Enable PLC
             if not self._enable_plc():
+                print("plc enabled is false (25678)")
                 return False
             
             # Read current parameters
             if not self._read_plc_parameters():
+                print("plc enabled is false (25679)")
                 return False
             
             # Set movement parameters
@@ -674,19 +701,26 @@ def test_interface():
     rospy.init_node('test_hexapod201_interface', anonymous=True)
     interface = Hexapod201Interface(node_name="hexapod201_interface", plc_ip="5.157.100.214.1.1")
     pose = Pose()
-    pose.position.x = 0.5
+    pose.position.x = 0.0
     pose.position.y = 0.0
-    pose.position.z = 0.3
-    quat = quaternion_from_euler(0.0, 0.0, 0.0)
+    pose.position.z = 0.0
+    # yaw pitch roll
+    yaw:float = 3.1415926*10.0/180.0
+    pitch:float = 3.1415926*2.0/180.0
+    roll:float = 3.1415926*5.0/180.0
+    quat = quaternion_from_euler(yaw, pitch, roll)
+    pose.orientation.w = quat[3]
     pose.orientation.x = quat[0]
     pose.orientation.y = quat[1]
     pose.orientation.z = quat[2]
-    pose.orientation.w = quat[3]
     interface.move_to_pose(pose)
     rospy.sleep(5)  # Wait for movement to complete
     current_pose = interface.get_current_pose()
     rospy.loginfo(f"Current pose after movement: {current_pose}")
+    rospy.sleep(10)
+    interface.stop_movement()
+    rospy.sleep(2)
 
 if __name__ == "__main__":
-    main()
-    # test_interface()
+    # main()
+    test_interface()
