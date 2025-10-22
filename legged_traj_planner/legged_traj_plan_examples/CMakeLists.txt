@@ -152,6 +152,7 @@ add_library(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
+  ${OMPL_LIBRARIES}
 )
 
 # Image to Grid Map
@@ -167,6 +168,7 @@ target_link_libraries(elspider_air_state_sequence_planner
   ${catkin_LIBRARIES}
   ${PROJECT_NAME}
   mcts_planner
+  ${OMPL_LIBRARIES}
 )
 
 # ElSpiderAirRaibertPlanner
@@ -174,6 +176,14 @@ add_executable(elspider_air_raibert_planner src/elspider_air_raibert_planner.cpp
 target_link_libraries(elspider_air_raibert_planner
   ${catkin_LIBRARIES}
   ${PROJECT_NAME}
+)
+
+# Hexapod201StateSequencePlanner
+add_executable(hexapod201_state_sequence_planner src/hexapod201_state_sequence_planner.cpp)
+target_link_libraries(hexapod201_state_sequence_planner
+  ${catkin_LIBRARIES}
+  ${PROJECT_NAME}
+  ${OMPL_LIBRARIES}
 )
 
 # UnitreeA1RaibertPlanner

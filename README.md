@@ -150,6 +150,18 @@ Robot Control:
 `PS5`
 Joistick control the robot.
 
+#### Hexapod Robot (Hexapod201)
+![Hexapod201](./doc/hexapod201.png)
+```bash
+roslaunch legged_traj_plan_examples hexapod201_state_sequence_planner.launch \
+robot_interface_type:=Hexapod201Dummy \
+sim:=true \
+teleop_type:=keyboard \
+demo_name:=5_channel \
+planner_cfg:=height_clear_planner
+```
+
+
 ### Raibert Heuristic Planner Examples
 
 Perform trajectory optimization & reachability check using Raibert heuristic planner.

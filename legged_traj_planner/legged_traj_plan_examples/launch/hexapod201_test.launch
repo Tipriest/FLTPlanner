@@ -1,0 +1,9 @@
+<launch>
+
+    <arg name="output" default="screen" />
+    <!-- Start Python interface node if use_pyinterface is true -->
+    <node pkg="hexapod_controller" type="hexapod201_interface.py" name="hexapod201_interface" output="$(arg output)">
+        <param name="interface_type" value="dummy" />
+    </node>
+
+</launch>
